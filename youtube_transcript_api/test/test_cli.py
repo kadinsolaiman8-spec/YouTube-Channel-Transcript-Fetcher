@@ -358,9 +358,9 @@ class TestYouTubeTranscriptCli(TestCase):
             check=True,
         ).stdout.strip()
 
-        assert cli_version_msg == expected_version_msg, (
-            f"Expected version '{expected_version_msg}', but got '{cli_version_msg}'"
-        )
+        assert (
+            cli_version_msg == expected_version_msg
+        ), f"Expected version '{expected_version_msg}', but got '{cli_version_msg}'"
 
     def test_get_version_package_not_found(self):
         with patch(

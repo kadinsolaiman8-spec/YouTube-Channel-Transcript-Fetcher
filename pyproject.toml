@@ -63,6 +63,7 @@ optional = true
 pytest = "^8.3.3"
 coverage = "^7.6.1"
 responses = "^0.26.0"
+httpx = "*"
 
 [tool.poetry.group.dev]
 optional = true

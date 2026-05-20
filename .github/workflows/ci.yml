@@ -19,12 +19,12 @@ jobs:
           python-version: 3.9
       - name: Install dependencies
         run: |
-          pip install poetry poethepoet
+          pip install "poetry>=2.0,<3.0"
           poetry install --only dev
       - name: Format
-        run: poe ci-format
+        run: poetry run ruff format youtube_transcript_api --check
       - name: Lint
-        run: poe lint
+        run: poetry run ruff check youtube_transcript_api
 
   test:
     runs-on: ubuntu-latest
@@ -41,10 +41,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
-          pip install poetry poethepoet
+          pip install "poetry>=2.0,<3.0"
           poetry install --with test,channel
       - name: Run tests
-        run: poe test
+        run: poetry run pytest youtube_transcript_api
 
   coverage:
     needs: test
@@ -58,10 +58,12 @@ jobs:
           python-version: 3.9
       - name: Install dependencies
         run: |
-          pip install poetry poethepoet
+          pip install "poetry>=2.0,<3.0"
           poetry install --with test,channel
       - name: Check coverage
-        run: poe coverage
+        run: |
+          poetry run coverage run -m pytest youtube_transcript_api
+          poetry run coverage report -m --fail-under=100
 
   publish:
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
@@ -76,7 +78,7 @@ jobs:
           python-version: 3.9
       - name: Install dependencies
         run: |
-          pip install poetry
+          pip install "poetry>=2.0,<3.0"
           poetry install
       - name: Build
         run: poetry build

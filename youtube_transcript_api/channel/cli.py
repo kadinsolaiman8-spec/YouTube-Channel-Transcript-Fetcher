@@ -171,7 +171,6 @@ def main(argv: Optional[List[str]] = None) -> int:
 
 
 def _run_export(args: argparse.Namespace) -> int:
-
     filter_config = FilterConfig(
         min_age_days=args.min_age_days,
         percentile_cutoff=args.percentile_cutoff,
