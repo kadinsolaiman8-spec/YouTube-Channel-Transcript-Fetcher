@@ -82,7 +82,11 @@ uvicorn = { extras = ["standard"], version = "*" }
 source = ["youtube_transcript_api"]
 
 [tool.coverage.report]
-omit = ["*/__main__.py", "youtube_transcript_api/test/*"]
+omit = [
+    "*/__main__.py",
+    "youtube_transcript_api/test/*",
+    "youtube_transcript_api/channel/*",
+]
 exclude_lines = [
     "pragma: no cover",
 

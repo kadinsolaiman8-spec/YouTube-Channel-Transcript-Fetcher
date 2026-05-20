@@ -99,9 +99,7 @@ def _is_invalid_api_key_response(
     if "API key not valid" in message or "API key expired" in message:
         return True
     errors = payload.get("error", {}).get("errors") or []
-    return any(
-        err.get("reason") in ("keyInvalid", "API_KEY_INVALID") for err in errors
-    )
+    return any(err.get("reason") in ("keyInvalid", "API_KEY_INVALID") for err in errors)
 
 
 def _api_get(
@@ -185,7 +183,9 @@ def resolve_channel(
                 details={"input_url": channel_url, "playlist_id": playlist_id},
             )
         snippet = items[0].get("snippet") or {}
-        channel_title = str(snippet.get("channelTitle") or snippet.get("title") or "unknown")
+        channel_title = str(
+            snippet.get("channelTitle") or snippet.get("title") or "unknown"
+        )
         channel_id = str(snippet.get("channelId") or "")
         if not channel_id:
             raise ChannelScrapeError(
@@ -218,11 +218,7 @@ def resolve_channel(
     channel_id = str(item["id"])
     snippet = item.get("snippet") or {}
     channel_title = str(snippet.get("title") or "unknown")
-    uploads = (
-        item.get("contentDetails", {})
-        .get("relatedPlaylists", {})
-        .get("uploads")
-    )
+    uploads = item.get("contentDetails", {}).get("relatedPlaylists", {}).get("uploads")
     if not uploads:
         raise ChannelScrapeError(
             "Channel has no uploads playlist in API response",

@@ -11,8 +11,7 @@ _HANDLE_PATTERN = re.compile(r"^@[\w.-]+$")
 _HANDLE_VALUE_PATTERN = re.compile(r"^[\w.-]+$")
 
 _INVALID_HANDLE_HINT = (
-    "Include a channel handle after @, for example "
-    "https://www.youtube.com/@ChannelName"
+    "Include a channel handle after @, for example https://www.youtube.com/@ChannelName"
 )
 _UNSUPPORTED_HINT = (
     "Use @handle, /channel/UC..., or an uploads playlist URL (list=UU...)."

@@ -9,7 +9,11 @@ from unittest.mock import MagicMock, patch
 
 from fastapi.testclient import TestClient
 
-from youtube_transcript_api.channel.models import ExportConfig, FilterConfig, ScrapeConfig
+from youtube_transcript_api.channel.models import (
+    ExportConfig,
+    FilterConfig,
+    ScrapeConfig,
+)
 from youtube_transcript_api.channel.web import app as web_app
 from youtube_transcript_api.channel.web.app import JobState, JobStatus
 
@@ -122,9 +126,7 @@ class TestChannelWebApp(TestCase):
 
     @patch("youtube_transcript_api.channel.web.app._start_export_worker")
     @patch("youtube_transcript_api.channel.web.app.proxy_config_label")
-    def test_create_job_logs_proxy_hint(
-        self, mock_proxy_label, mock_start
-    ) -> None:
+    def test_create_job_logs_proxy_hint(self, mock_proxy_label, mock_start) -> None:
         mock_proxy_label.return_value = "Using Webshare proxy from environment"
         client = TestClient(web_app.app)
         response = client.post(

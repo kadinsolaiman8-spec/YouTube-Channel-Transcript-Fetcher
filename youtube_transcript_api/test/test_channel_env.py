@@ -1,5 +1,4 @@
 import os
-from pathlib import Path
 
 from youtube_transcript_api.channel.env import load_local_env
 

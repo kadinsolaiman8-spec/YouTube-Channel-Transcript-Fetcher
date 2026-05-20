@@ -120,7 +120,11 @@ def run_export_job(
             }
         )
     except Exception as exc:
-        stage = "fetching" if exc.__class__.__name__ == "NoTranscriptsRetrieved" else "error"
+        stage = (
+            "fetching"
+            if exc.__class__.__name__ == "NoTranscriptsRetrieved"
+            else "error"
+        )
         report = format_error_report(
             exc,
             channel_url=channel_url,

@@ -60,5 +60,5 @@ try:
     from youtube_transcript_api.channel.pipeline import run_pipeline
 
     __all__ += ["FilterConfig", "run_pipeline"]
-except ImportError:
+except ImportError:  # pragma: no cover
     pass

@@ -22,6 +22,7 @@ def _emit_log(callback: Optional[ProgressCallback], message: str) -> None:
     if callable(on_log):
         on_log(message)
 
+
 # Stage ranges on a 0–100 scale (start inclusive, end exclusive).
 STAGE_RANGES: dict[str, tuple[int, int]] = {
     "scraping": (0, 40),

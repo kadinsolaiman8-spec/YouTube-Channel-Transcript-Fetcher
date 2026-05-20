@@ -30,12 +30,20 @@ from youtube_transcript_api.channel.youtube_data_api import (
     youtube_api_key_configured,
 )
 
+
 class DownloadError(Exception):
     """Raised by yt-dlp during extract; aliased to yt_dlp.utils.DownloadError when imported."""
 
 
 WATCH_URL_TEMPLATE = "https://www.youtube.com/watch?v={video_id}"
-_CHANNEL_TAB_SUFFIXES = ("/videos", "/shorts", "/streams", "/playlists", "/featured", "/about")
+_CHANNEL_TAB_SUFFIXES = (
+    "/videos",
+    "/shorts",
+    "/streams",
+    "/playlists",
+    "/featured",
+    "/about",
+)
 _VIDEO_ID_PATTERN = re.compile(r"^[A-Za-z0-9_-]{11}$")
 _MIN_ENRICH_SLEEP_SECONDS = 0.25
 _ENRICH_SLEEP_BATCH_THRESHOLD = 20
@@ -490,7 +498,7 @@ def _run_ytdlp_metadata_enrich(
         return 0
 
     bot_blocked_count = 0
-    ytdlp_total = len(still_pending)
+    len(still_pending)
     completed = 0
 
     with ThreadPoolExecutor(max_workers=enrich_workers) as executor:
@@ -607,8 +615,7 @@ def _enumerate_playlist(
 
 def _cookies_configured(config: ScrapeConfig) -> bool:
     return bool(
-        (config.cookies_from_browser or "").strip()
-        or (config.cookiefile or "").strip()
+        (config.cookies_from_browser or "").strip() or (config.cookiefile or "").strip()
     )
 
 
@@ -630,9 +637,7 @@ def _try_youtube_api_fallback(
         raise original_exc
 
     error_name = type(original_exc).__name__
-    progress.report_log(
-        f"yt-dlp failed ({error_name}); switching to YouTube Data API…"
-    )
+    progress.report_log(f"yt-dlp failed ({error_name}); switching to YouTube Data API…")
     progress.report_meta(
         scrape_backend="youtube_data_api",
         scrape_backend_reason="ytdlp_fallback",

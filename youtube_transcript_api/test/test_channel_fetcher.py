@@ -49,7 +49,9 @@ def _make_transcript(video_id: str, lines: list[str]) -> FetchedTranscript:
 class TestChannelFetcher(TestCase):
     def setUp(self):
         self.export_config = ExportConfig(languages=("en", "de"))
-        self.api_patcher = patch("youtube_transcript_api.channel.fetcher.YouTubeTranscriptApi")
+        self.api_patcher = patch(
+            "youtube_transcript_api.channel.fetcher.YouTubeTranscriptApi"
+        )
         self.mock_api_cls = self.api_patcher.start()
         self.mock_api = MagicMock()
         self.mock_api_cls.return_value = self.mock_api
@@ -99,12 +101,15 @@ class TestChannelFetcher(TestCase):
 
         self.assertEqual(kept, [])
         self.assertEqual(len(failed), 4)
-        self.assertEqual({record.video_id for record, _ in failed}, {
-            "disabled",
-            "missing",
-            "unavailable",
-            "blocked",
-        })
+        self.assertEqual(
+            {record.video_id for record, _ in failed},
+            {
+                "disabled",
+                "missing",
+                "unavailable",
+                "blocked",
+            },
+        )
         reasons = {reason for _, reason in failed}
         self.assertIn("Subtitles disabled", reasons)
         self.assertIn("No transcript found", reasons)
@@ -119,9 +124,7 @@ class TestChannelFetcher(TestCase):
             _make_transcript("ok2", ["second"]),
         ]
 
-        kept, failed = fetch_transcripts(
-            records, self.export_config, max_workers=1
-        )
+        kept, failed = fetch_transcripts(records, self.export_config, max_workers=1)
 
         self.assertEqual(len(kept), 2)
         self.assertEqual(len(failed), 1)

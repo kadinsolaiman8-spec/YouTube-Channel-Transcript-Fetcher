@@ -6,7 +6,7 @@ from collections import Counter
 from datetime import datetime, timezone
 from typing import IO, List, Tuple
 
-from .models import ExportConfig, ExportDensity, PipelineResult, ProcessedVideo
+from .models import ExportConfig, PipelineResult, ProcessedVideo
 
 _HEADER_RULE = "=" * 80
 _VIDEO_RULE = "-" * 80
@@ -110,9 +110,7 @@ def _short_video_url(video_id: str) -> str:
     return f"https://youtu.be/{video_id}"
 
 
-def _sort_videos(
-    videos: List[ProcessedVideo], sort_order: str
-) -> List[ProcessedVideo]:
+def _sort_videos(videos: List[ProcessedVideo], sort_order: str) -> List[ProcessedVideo]:
     reverse = sort_order == "desc"
     return sorted(videos, key=lambda video: video.record.published_at, reverse=reverse)
 
@@ -132,9 +130,7 @@ def _format_document_header(
 def _format_document_header_compact(
     result: PipelineResult, config: ExportConfig, success_count: int
 ) -> str:
-    attempted = result.fetch_attempted or (
-        success_count + len(result.failed)
-    )
+    attempted = result.fetch_attempted or (success_count + len(result.failed))
     removed_count = len(result.removed)
     exported_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
     return (
@@ -148,9 +144,7 @@ def _format_document_header_compact(
 def _format_document_header_verbose(
     result: PipelineResult, config: ExportConfig, success_count: int
 ) -> str:
-    attempted = result.fetch_attempted or (
-        success_count + len(result.failed)
-    )
+    attempted = result.fetch_attempted or (success_count + len(result.failed))
     removed_count = len(result.removed)
     exported_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
@@ -161,10 +155,7 @@ def _format_document_header_verbose(
         f"Channel: {result.channel_label}",
         f"Exported: {exported_at}",
         f"Transcripts: {success_count}/{attempted}",
-        (
-            f"Scraped: {result.scraped_video_count} "
-            f"(filtered out: {removed_count})"
-        ),
+        (f"Scraped: {result.scraped_video_count} (filtered out: {removed_count})"),
         f"Filter: {result.filter_summary}",
         f"Sort: {_sort_label(config.sort_order)} first",
         _HEADER_RULE,
@@ -180,9 +171,7 @@ def _format_video_block(
     return _format_video_block_compact(video, index, total)
 
 
-def _format_video_block_compact(
-    video: ProcessedVideo, index: int, total: int
-) -> str:
+def _format_video_block_compact(video: ProcessedVideo, index: int, total: int) -> str:
     record = video.record
     published = record.published_at.strftime("%Y-%m-%d")
     transcript = _prepare_transcript_text(video.transcript_text)
@@ -193,9 +182,7 @@ def _format_video_block_compact(
     return "\n".join([header, _short_video_url(record.video_id), "", transcript])
 
 
-def _format_video_block_verbose(
-    video: ProcessedVideo, index: int, total: int
-) -> str:
+def _format_video_block_verbose(video: ProcessedVideo, index: int, total: int) -> str:
     record = video.record
     published = record.published_at.strftime("%Y-%m-%d")
     transcript = _prepare_transcript_text(video.transcript_text)

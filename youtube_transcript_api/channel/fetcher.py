@@ -122,9 +122,9 @@ def fetch_transcripts(
     total = len(records)
     kept: List[ProcessedVideo] = []
     failed: List[Tuple[VideoRecord, str]] = []
-    ordered_results: List[
-        Optional[Union[ProcessedVideo, Tuple[VideoRecord, str]]]
-    ] = [None] * total
+    ordered_results: List[Optional[Union[ProcessedVideo, Tuple[VideoRecord, str]]]] = [
+        None
+    ] * total
     worker_count = max(1, max_workers)
 
     with ThreadPoolExecutor(max_workers=worker_count) as executor:

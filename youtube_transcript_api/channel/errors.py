@@ -15,7 +15,11 @@ from youtube_transcript_api.channel.fetcher import (
     RATE_LIMIT_REASON,
     RATE_LIMIT_REASON_PROXY,
 )
-from youtube_transcript_api.channel.models import ExportConfig, FilterConfig, ScrapeConfig
+from youtube_transcript_api.channel.models import (
+    ExportConfig,
+    FilterConfig,
+    ScrapeConfig,
+)
 
 
 def build_no_transcripts_details(

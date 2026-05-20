@@ -139,7 +139,9 @@ class TestScrapeChannel:
         ]
         assert enrich_instances
 
-    def test_scrape_channel_enriches_missing_publish_dates(self, ytdlp_on_path, monkeypatch):
+    def test_scrape_channel_enriches_missing_publish_dates(
+        self, ytdlp_on_path, monkeypatch
+    ):
         flat_info = {
             "channel": "Flat Dates",
             "entries": [
@@ -159,7 +161,9 @@ class TestScrapeChannel:
         mock_class = _make_mock_youtube_dl(flat_info, enrich_info)
         _patch_ytdlp(monkeypatch, mock_class)
 
-        records, channel_label, scrape_backend = scrape_channel("https://www.youtube.com/@FlatDates")
+        records, channel_label, scrape_backend = scrape_channel(
+            "https://www.youtube.com/@FlatDates"
+        )
 
         assert channel_label == "Flat Dates"
         assert len(records) == 1
@@ -200,7 +204,9 @@ class TestScrapeChannel:
 
         _patch_ytdlp(monkeypatch, MockYoutubeDL)
 
-        records, channel_label, scrape_backend = scrape_channel("https://www.youtube.com/@AllViews")
+        records, channel_label, scrape_backend = scrape_channel(
+            "https://www.youtube.com/@AllViews"
+        )
 
         assert channel_label == "All Views"
         assert len(records) == 1
@@ -253,7 +259,9 @@ class TestScrapeChannel:
         _patch_ytdlp(monkeypatch, MockYoutubeDL)
         monkeypatch.setattr(scraper, "_get_api_key", lambda: None)
 
-        with pytest.raises(ChannelScrapeError, match="Could not scrape channel") as exc_info:
+        with pytest.raises(
+            ChannelScrapeError, match="Could not scrape channel"
+        ) as exc_info:
             scrape_channel("https://www.youtube.com/@Missing")
 
         assert exc_info.value.details["error_type"] == "RuntimeError"
@@ -288,7 +296,9 @@ class TestScrapeChannel:
                     raise scraper.DownloadError("unavailable video in playlist")
                 return flat_info
 
-        def enumerate_playlist(list_url, youtube_dl_class, scrape_config, progress=None):
+        def enumerate_playlist(
+            list_url, youtube_dl_class, scrape_config, progress=None
+        ):
             info: dict = {}
             try:
                 with youtube_dl_class(scraper._enumerate_opts(scrape_config)) as ydl:
@@ -309,7 +319,9 @@ class TestScrapeChannel:
         _patch_ytdlp(monkeypatch, MockYoutubeDL)
         monkeypatch.setattr(scraper, "_enumerate_playlist", enumerate_playlist)
 
-        records, channel_label, scrape_backend = scrape_channel("https://www.youtube.com/@TestChannel")
+        records, channel_label, scrape_backend = scrape_channel(
+            "https://www.youtube.com/@TestChannel"
+        )
 
         assert channel_label == "Test Channel"
         assert len(records) == 3
@@ -342,15 +354,15 @@ class TestScrapeChannel:
         mock_class = _make_mock_youtube_dl(flat_info, load_fixture("video_enrich.json"))
         _patch_ytdlp(monkeypatch, mock_class)
 
-        records, channel_label, scrape_backend = scrape_channel("https://www.youtube.com/@TestChannel")
+        records, channel_label, scrape_backend = scrape_channel(
+            "https://www.youtube.com/@TestChannel"
+        )
 
         assert channel_label == "Test Channel"
         assert len(records) == 2
         assert {record.video_id for record in records} == {"abc123def45", "xyz987uvw65"}
 
-    def test_scrape_channel_falls_back_to_youtube_api(
-        self, ytdlp_on_path, monkeypatch
-    ):
+    def test_scrape_channel_falls_back_to_youtube_api(self, ytdlp_on_path, monkeypatch):
         api_records = [
             VideoRecord(
                 video_id="api00000001",
@@ -382,7 +394,9 @@ class TestScrapeChannel:
             lambda channel_url, api_key, progress=None: (api_records, "API Channel"),
         )
 
-        records, channel_label, scrape_backend = scrape_channel("https://www.youtube.com/@ApiFallback")
+        records, channel_label, scrape_backend = scrape_channel(
+            "https://www.youtube.com/@ApiFallback"
+        )
 
         assert channel_label == "API Channel"
         assert scrape_backend == "youtube_data_api"
@@ -569,7 +583,9 @@ class TestScrapeChannel:
                     }
             return metadata
 
-        monkeypatch.setattr(scraper, "fetch_video_metadata_by_ids", _partial_api_metadata)
+        monkeypatch.setattr(
+            scraper, "fetch_video_metadata_by_ids", _partial_api_metadata
+        )
 
         records, _, scrape_backend = scrape_channel(
             "https://www.youtube.com/@PartialApi",
@@ -689,7 +705,9 @@ class TestScrapeChannel:
         mock_class = _make_mock_youtube_dl(flat_info, load_fixture("video_enrich.json"))
         _patch_ytdlp(monkeypatch, mock_class)
 
-        records, channel_label, scrape_backend = scrape_channel("https://www.youtube.com/@TestChannel")
+        records, channel_label, scrape_backend = scrape_channel(
+            "https://www.youtube.com/@TestChannel"
+        )
 
         assert channel_label == "Test Channel"
         assert len(records) == 3

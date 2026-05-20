@@ -5,7 +5,11 @@ from __future__ import annotations
 import os
 from typing import Optional
 
-from youtube_transcript_api.proxies import GenericProxyConfig, ProxyConfig, WebshareProxyConfig
+from youtube_transcript_api.proxies import (
+    GenericProxyConfig,
+    ProxyConfig,
+    WebshareProxyConfig,
+)
 
 # Channel exports: fewer urllib 429 retries than library default (10) to avoid
 # hammering timedtext when already rate-limited.

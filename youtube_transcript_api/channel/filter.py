@@ -57,9 +57,7 @@ def _build_filter_summary(
     parts: list[str] = []
 
     if age_gate_removed:
-        parts.append(
-            f"{min_age_days}-day age gate removed {age_gate_removed} video(s)"
-        )
+        parts.append(f"{min_age_days}-day age gate removed {age_gate_removed} video(s)")
 
     if eligible_after_age_gate == 0:
         if not parts:
@@ -127,8 +125,7 @@ def filter_videos(
     for record in age_eligible:
         below_percentile = record.view_count < threshold
         below_floor = (
-            config.min_views_floor > 0
-            and record.view_count < config.min_views_floor
+            config.min_views_floor > 0 and record.view_count < config.min_views_floor
         )
         if below_percentile or below_floor:
             removed.append(record)

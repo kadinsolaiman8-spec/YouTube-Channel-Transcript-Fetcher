@@ -179,9 +179,7 @@ def _run_export(args: argparse.Namespace) -> int:
         max_videos=max(0, args.max_videos),
     )
     languages = tuple(
-        language.strip()
-        for language in args.languages.split(",")
-        if language.strip()
+        language.strip() for language in args.languages.split(",") if language.strip()
     )
     export_config = ExportConfig(
         sort_order=args.sort,

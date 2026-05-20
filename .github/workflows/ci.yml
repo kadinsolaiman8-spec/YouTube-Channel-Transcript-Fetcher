@@ -42,28 +42,15 @@ jobs:
       - name: Install dependencies
         run: |
           pip install poetry poethepoet
-          poetry install --with test
+          poetry install --with test,channel
       - name: Run tests
-        run: |
-          poe ci-test
-      - name: Report intermediate coverage report
-        uses: coverallsapp/github-action@v2
-        with:
-          file: coverage.xml
-          format: cobertura
-          flag-name: run-python-${{ matrix.python-version }}
-          parallel: true
+        run: poe test
 
   coverage:
     needs: test
     runs-on: ubuntu-latest
 
     steps:
-      - name: Finalize coverage report
-        uses: coverallsapp/github-action@v2
-        with:
-          parallel-finished: true
-          carryforward: "run-python-3.8,run-python-3.9,run-python-3.10,run-python-3.11,run-python-3.12,run-python-3.13,run-python-3.14"
       - uses: actions/checkout@v4
       - name: Set up Python 3.9
         uses: actions/setup-python@v5
@@ -72,7 +59,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install poetry poethepoet
-          poetry install --with test
+          poetry install --with test,channel
       - name: Check coverage
         run: poe coverage
 

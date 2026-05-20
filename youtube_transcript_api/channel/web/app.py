@@ -659,7 +659,9 @@ def _require_completed_job(job_id: str) -> JobState:
 
 
 def _download_filename(job: JobState) -> str:
-    slug = re.sub(r"[^a-zA-Z0-9]+", "_", job.channel_label.lower()).strip("_") or "channel"
+    slug = (
+        re.sub(r"[^a-zA-Z0-9]+", "_", job.channel_label.lower()).strip("_") or "channel"
+    )
     date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     return f"{slug}_{date_str}.txt"
 

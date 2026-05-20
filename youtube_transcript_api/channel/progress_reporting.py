@@ -128,21 +128,25 @@ def _scrape_seconds(
             pending = int(videos * 0.15)
         fetched = metadata_fetched or 0
         remaining = max(0, pending - fetched)
-        enrich = remaining * _BASE_ENRICH_PER_VIDEO_API / max(
-            1, settings.enrich_max_workers
+        enrich = (
+            remaining * _BASE_ENRICH_PER_VIDEO_API / max(1, settings.enrich_max_workers)
         )
     else:
         resolve = _BASE_RESOLVE_SECONDS
         if settings.uses_cookies:
             resolve *= 1.15
-        enumerate = _BASE_ENUMERATE_SECONDS_YTDLP + videos * _BASE_ENUMERATE_PER_VIDEO_YTDLP
+        enumerate = (
+            _BASE_ENUMERATE_SECONDS_YTDLP + videos * _BASE_ENUMERATE_PER_VIDEO_YTDLP
+        )
         pending = metadata_total if metadata_total is not None else 0
         if metadata_total is None and scraped_video_count is None:
             pending = int(videos * 0.35)
         fetched = metadata_fetched or 0
         remaining = max(0, pending - fetched)
-        enrich = remaining * _BASE_ENRICH_PER_VIDEO_YTDLP / max(
-            1, settings.enrich_max_workers
+        enrich = (
+            remaining
+            * _BASE_ENRICH_PER_VIDEO_YTDLP
+            / max(1, settings.enrich_max_workers)
         )
 
     return resolve + enumerate + enrich
@@ -197,9 +201,10 @@ def project_pipeline_seconds(
         metadata_total,
         metadata_fetched,
     )
-    filter_seconds = _BASE_FILTER_SECONDS + effective_scraped_count(
-        scraped_video_count, settings.max_videos
-    ) * 0.002
+    filter_seconds = (
+        _BASE_FILTER_SECONDS
+        + effective_scraped_count(scraped_video_count, settings.max_videos) * 0.002
+    )
     fetch = _fetch_seconds(settings, kept_count)
     if fetch_total and fetch_completed is not None and fetch_total > 0:
         kept_count = fetch_total
@@ -239,9 +244,10 @@ def estimate_eta_seconds(
 
     remaining_fraction = (100 - percent) / percent
     linear_eta = int(elapsed_seconds * remaining_fraction)
-    linear_eta = int(linear_eta * _early_inflation_factor(
-        scraped_video_count, metadata_total, metadata_fetched
-    ))
+    linear_eta = int(
+        linear_eta
+        * _early_inflation_factor(scraped_video_count, metadata_total, metadata_fetched)
+    )
 
     if settings is None:
         return linear_eta
@@ -279,11 +285,7 @@ def estimate_eta_seconds(
 
     if percent < 12:
         eta = max(float(linear_eta), model_remaining)
-    elif (
-        fetch_completed is not None
-        and fetch_total
-        and fetch_completed < fetch_total
-    ):
+    elif fetch_completed is not None and fetch_total and fetch_completed < fetch_total:
         eta = max(float(linear_eta) * 0.2, model_remaining)
     elif percent < 45:
         eta = 0.35 * linear_eta + 0.65 * model_remaining

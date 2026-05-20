@@ -4,7 +4,10 @@ from pathlib import Path
 from unittest import TestCase
 from unittest.mock import patch
 
-from youtube_transcript_api.channel.export import AgentChannelFormatter, join_caption_lines
+from youtube_transcript_api.channel.export import (
+    AgentChannelFormatter,
+    join_caption_lines,
+)
 from youtube_transcript_api.channel.models import (
     ExportConfig,
     PipelineResult,
@@ -154,9 +157,7 @@ class TestAgentChannelFormatter(TestCase):
         "youtube_transcript_api.channel.export.datetime",
         wraps=datetime,
     )
-    def test_include_metadata_header_false_omits_document_header(
-        self, mock_datetime
-    ):
+    def test_include_metadata_header_false_omits_document_header(self, mock_datetime):
         mock_datetime.now.return_value = FIXED_EXPORT_TIME
         mock_datetime.side_effect = lambda *args, **kwargs: datetime(*args, **kwargs)
 
@@ -197,7 +198,9 @@ class TestAgentChannelFormatter(TestCase):
             self.result,
             ExportConfig(sort_order="asc", export_density="verbose"),
         )
-        expected = (ASSETS_DIR / "export_fixture_verbose.txt").read_text(encoding="utf-8")
+        expected = (ASSETS_DIR / "export_fixture_verbose.txt").read_text(
+            encoding="utf-8"
+        )
         self.assertEqual(output, expected)
 
     def test_join_caption_lines_merges_continuation(self):
