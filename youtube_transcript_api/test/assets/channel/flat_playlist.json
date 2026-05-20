@@ -1,0 +1,26 @@
+{
+  "channel": "Test Channel",
+  "uploader": "Test Channel",
+  "entries": [
+    {
+      "id": "abc123def45",
+      "title": "Video With Views",
+      "upload_date": "20240115",
+      "view_count": 50000,
+      "url": "https://www.youtube.com/watch?v=abc123def45"
+    },
+    {
+      "id": "xyz987uvw65",
+      "title": "Video Needs Enrich",
+      "upload_date": "20240201",
+      "url": "https://www.youtube.com/watch?v=xyz987uvw65"
+    },
+    {
+      "id": "ts111222333",
+      "title": "Video With Timestamp",
+      "timestamp": 1709251200,
+      "view_count": 900,
+      "url": "https://www.youtube.com/watch?v=ts111222333"
+    }
+  ]
+}

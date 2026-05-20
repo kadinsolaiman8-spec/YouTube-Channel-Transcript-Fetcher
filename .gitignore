@@ -9,3 +9,7 @@ upload_new_version.sh
 .coverage
 coverage.xml
 .DS_STORE
+.env
+.env.local
+__pycache__/
+.pytest_cache/

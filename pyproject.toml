@@ -5,14 +5,15 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]
 name = "youtube-transcript-api"
 version = "1.2.4"
-description = "This is a python API which allows you to get the transcripts/subtitles for a given YouTube video. It also works for automatically generated subtitles, supports translating subtitles and it does not require a headless browser, like other selenium based solutions do!"
+description = "Export LLM-ready plain-text transcripts for entire YouTube channels — CLI, web UI, filtering, and proxy support. Built on youtube-transcript-api."
 readme = "README.md"
 license = "MIT"
 authors = [
     "Jonas Depoix <jonas.depoix@web.de>",
+    "Kadin Solaiman",
 ]
-homepage = "https://github.com/jdepoix/youtube-transcript-api"
-repository = "https://github.com/jdepoix/youtube-transcript-api"
+homepage = "https://github.com/kadinsolaiman8-spec/YouTube-Channel-Transcript-Fetcher"
+repository = "https://github.com/kadinsolaiman8-spec/YouTube-Channel-Transcript-Fetcher"
 keywords = [
     "cli",
     "subtitle",
@@ -38,6 +39,8 @@ classifiers = [
 
 [tool.poetry.scripts]
 youtube_transcript_api = "youtube_transcript_api.__main__:main"
+youtube_channel_export = "youtube_transcript_api.channel.cli:main"
+youtube_channel_web = "youtube_transcript_api.channel.web.app:main"
 
 [tool.poe.tasks]
 test = "pytest youtube_transcript_api"
@@ -66,6 +69,14 @@ optional = true
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.6.8"
+
+[tool.poetry.group.channel]
+optional = true
+
+[tool.poetry.group.channel.dependencies]
+yt-dlp = "*"
+fastapi = "*"
+uvicorn = { extras = ["standard"], version = "*" }
 
 [tool.coverage.run]
 source = ["youtube_transcript_api"]

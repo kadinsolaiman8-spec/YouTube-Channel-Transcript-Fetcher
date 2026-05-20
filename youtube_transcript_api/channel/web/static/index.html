@@ -1,0 +1,1844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Channel Transcript Export</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --void: #000000;
+      --surface: #1c1c1c;
+      --surface-hover: #242424;
+      --text-primary: #ffffff;
+      --text-muted: #a8a8a8;
+      --accent: #d61f1f;
+      --accent-hover: #e52525;
+      --accent-dim: rgba(214, 31, 31, 0.35);
+      --accent-glow: rgba(214, 31, 31, 0.25);
+      --font-ui: "DM Sans", system-ui, sans-serif;
+      --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      font-family: var(--font-ui);
+      background: var(--void);
+      color: var(--text-primary);
+      line-height: 1.5;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* Peripheral */
+    .peripheral-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1rem 1.5rem 0.5rem;
+      opacity: 0.85;
+    }
+
+    .brand-block {
+      min-width: 0;
+    }
+
+    .brand-title {
+      margin: 0;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .brand-tagline {
+      margin: 0.15rem 0 0;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      opacity: 0.75;
+    }
+
+    .peripheral-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-shrink: 0;
+    }
+
+    .ghost-btn {
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 0.8rem;
+      padding: 0.35rem 0.5rem;
+      border-radius: 4px;
+    }
+
+    .ghost-btn:hover {
+      color: var(--text-primary);
+    }
+
+    .peripheral-bottom {
+      padding: 0.5rem 1.5rem 1rem;
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      opacity: 0.55;
+      text-align: center;
+    }
+
+    /* Hero stage */
+    .stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem 1.5rem 1.25rem;
+      max-width: 720px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .hero-url-wrap {
+      width: 100%;
+    }
+
+    .hero-url {
+      width: 100%;
+      padding: 0.85rem 0;
+      border: none;
+      border-bottom: 1px solid var(--surface-hover);
+      background: transparent;
+      color: var(--text-primary);
+      font-family: var(--font-ui);
+      font-size: clamp(1.35rem, 4vw, 2rem);
+      font-weight: 500;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .hero-url::placeholder {
+      color: var(--text-muted);
+      opacity: 0.5;
+    }
+
+    .hero-url:focus {
+      border-bottom-color: var(--accent);
+      box-shadow: 0 1px 0 var(--accent-glow);
+    }
+
+    .recents-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.65rem;
+      min-height: 1.5rem;
+    }
+
+    .recent-pill {
+      cursor: pointer;
+      border: none;
+      background: var(--surface);
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 0.72rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      max-width: 12rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .recent-pill:hover {
+      color: var(--text-primary);
+      background: var(--surface-hover);
+    }
+
+    .preset-hint {
+      margin: 0.5rem 0 0;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      opacity: 0.8;
+    }
+
+    /* Pipeline embedded in hero */
+    .pipeline-ui {
+      width: 100%;
+      margin-top: 1.5rem;
+    }
+
+    .pipeline-ui.idle-collapsed .pipeline-inner {
+      display: none;
+    }
+
+    .pipeline-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .stage-line {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .stage-line .stage-active {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .percent-line {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .progress-track {
+      height: 3px;
+      background: var(--surface);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 0.75rem;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      transition: width 0.35s ease;
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    .progress-fill.indeterminate {
+      width: 30% !important;
+      animation: indeterminate 1.2s ease-in-out infinite;
+    }
+
+    @keyframes indeterminate {
+      0% { margin-left: 0%; }
+      50% { margin-left: 70%; }
+      100% { margin-left: 0%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .progress-fill.indeterminate {
+        animation: none;
+        width: 50% !important;
+        margin-left: 25%;
+      }
+    }
+
+    .status-line {
+      margin: 0;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .timing-line,
+    .backend-line {
+      margin: 0.25rem 0 0;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .backend-line strong {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .fallback-note {
+      margin: 0.25rem 0 0;
+      font-size: 0.72rem;
+      color: var(--accent);
+      opacity: 0.9;
+    }
+
+    .status-log-wrap {
+      width: 100%;
+      margin-top: 0.75rem;
+    }
+
+    .status-log-shell {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .status-log-viewport {
+      width: 100%;
+      overflow: hidden;
+      padding: 0.42rem 1rem;
+      background: var(--surface);
+      border-radius: 999px;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      line-height: 1.4;
+      color: var(--text-muted);
+      max-height: calc(0.84rem + 1.4em);
+      transition:
+        max-height 0.36s ease,
+        border-radius 0.36s ease,
+        padding 0.36s ease,
+        background 0.24s ease;
+    }
+
+    .status-log-viewport.is-collapsed.is-expandable {
+      cursor: pointer;
+    }
+
+    .status-log-viewport.is-collapsed.is-expandable:hover {
+      background: var(--surface-hover);
+    }
+
+    .status-log-viewport.is-expanded {
+      border-radius: 6px;
+      padding: 0.55rem 0.75rem;
+      max-height: 100px;
+      overflow-y: auto;
+      cursor: default;
+    }
+
+    .status-log-viewport.is-collapsed .status-log div:not(:first-child) {
+      display: none;
+    }
+
+    .status-log-viewport.is-collapsed .status-log div:first-child {
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .status-log div {
+      margin: 0.1rem 0;
+    }
+
+    .status-log-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      margin-top: 0.45rem;
+      padding: 0.28rem 0.85rem;
+      border: 1px solid var(--surface-hover);
+      border-radius: 999px;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 0.68rem;
+      cursor: pointer;
+      transition: color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .status-log-toggle:hover {
+      color: var(--text-primary);
+      border-color: var(--text-muted);
+    }
+
+    .status-log-toggle:focus-visible {
+      outline: 1px solid var(--accent-dim);
+    }
+
+    .status-log-toggle-arrow {
+      display: block;
+      width: 0.35rem;
+      height: 0.35rem;
+      border-right: 1.5px solid currentColor;
+      border-bottom: 1.5px solid currentColor;
+      transform: rotate(45deg);
+      transition: transform 0.28s ease;
+    }
+
+    .status-log-toggle[aria-expanded="true"] .status-log-toggle-arrow {
+      transform: rotate(-135deg);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .status-log-viewport,
+      .status-log-toggle,
+      .status-log-toggle-arrow {
+        transition: none;
+      }
+    }
+
+    .corpus-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      margin-top: 0.85rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .corpus-stats .stat-label {
+      display: block;
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.15rem;
+    }
+
+    .corpus-stats .stat strong {
+      display: block;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .corpus-stats .stat-corpus strong {
+      font-size: 1.25rem;
+    }
+
+    .cta-wrap {
+      width: 100%;
+      margin-top: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    button {
+      cursor: pointer;
+      font-family: inherit;
+      border: none;
+      border-radius: 4px;
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      width: 100%;
+      max-width: 320px;
+      padding: 0.85rem 1.5rem;
+      background: var(--accent);
+      color: var(--text-primary);
+      font-size: 1rem;
+      box-shadow: 0 0 24px var(--accent-glow);
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--accent-hover);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--surface-hover);
+      padding: 0.5rem 1rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      color: var(--text-primary);
+      border-color: var(--text-muted);
+    }
+
+    .btn-download {
+      width: 100%;
+      max-width: 320px;
+      padding: 0.85rem 1.5rem;
+      background: var(--accent);
+      color: var(--text-primary);
+      font-size: 1rem;
+      box-shadow: 0 0 28px var(--accent-glow);
+    }
+
+    .btn-download:hover:not(:disabled) {
+      background: var(--accent-hover);
+    }
+
+    .result-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      width: 100%;
+    }
+
+    .result-actions a {
+      text-decoration: none;
+      width: 100%;
+      max-width: 320px;
+      display: block;
+    }
+
+    /* Errors */
+    .error-zone {
+      width: 100%;
+      margin-top: 1rem;
+    }
+
+    .error-msg {
+      margin: 0;
+      font-size: 0.85rem;
+      color: var(--accent);
+      text-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .error-hint {
+      margin: 0.35rem 0 0;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .error-hint button {
+      background: none;
+      border: none;
+      color: var(--accent);
+      padding: 0;
+      font-size: inherit;
+      font-weight: 600;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    #error-report {
+      width: 100%;
+      min-height: 140px;
+      margin-top: 0.65rem;
+      padding: 0.75rem;
+      background: var(--surface);
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      line-height: 1.45;
+      border: none;
+      border-radius: 4px;
+      resize: vertical;
+    }
+
+    .copy-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    .copy-hint {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    #preview {
+      width: 100%;
+      margin: 1rem 0 0;
+      padding: 1rem;
+      max-height: 280px;
+      overflow: auto;
+      background: var(--surface);
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      word-break: break-word;
+      border-radius: 4px;
+    }
+
+    /* Filter / export collapse */
+    .spectrum-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      padding-top: 0.25rem;
+    }
+
+    .spectrum-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 0.5rem;
+      padding: 0.35rem 0.5rem;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .spectrum-toggle:hover {
+      color: var(--text-primary);
+    }
+
+    .spectrum-toggle:focus-visible {
+      outline: 1px solid var(--accent-dim);
+    }
+
+    .spectrum-toggle-arrow {
+      display: block;
+      width: 0.45rem;
+      height: 0.45rem;
+      border-right: 2px solid currentColor;
+      border-bottom: 2px solid currentColor;
+      transform: rotate(45deg);
+      transition: transform 0.28s ease;
+    }
+
+    .spectrum-toggle[aria-expanded="false"] .spectrum-toggle-arrow {
+      transform: rotate(-135deg);
+    }
+
+    .spectrum-panel {
+      display: grid;
+      grid-template-rows: 1fr;
+      width: 100%;
+      max-width: 720px;
+      transition: grid-template-rows 0.32s ease, opacity 0.28s ease;
+      opacity: 1;
+    }
+
+    .spectrum-panel.is-collapsed {
+      grid-template-rows: 0fr;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .spectrum-panel-inner {
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .spectrum-panel {
+        transition: none;
+      }
+
+      .spectrum-toggle-arrow {
+        transition: none;
+      }
+    }
+
+    /* Filter / export rows — centered, labels above fields */
+    .spectrum-wrap {
+      padding: 0 1.5rem 0.75rem;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .spectrum {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      width: 100%;
+    }
+
+    .spectrum-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.625rem;
+      width: 100%;
+    }
+
+    .spectrum-row-export {
+      margin-top: 1rem;
+    }
+
+    .spectrum-row-filters {
+      margin-top: 2.5rem;
+    }
+
+    .spectrum-row-filters::before {
+      content: "";
+      display: block;
+      width: 8.25rem;
+      height: 1px;
+      background: var(--surface-hover);
+      margin: -0.5rem auto 1.25rem;
+    }
+
+    .zone-label {
+      margin: 0;
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-align: center;
+      letter-spacing: 0.03em;
+    }
+
+    .spectrum-row-stations {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 0.65rem 1rem;
+      overflow: visible;
+      width: 100%;
+    }
+
+    .station {
+      flex: 0 1 auto;
+      min-width: 0;
+      width: 7.5rem;
+      max-width: 100%;
+    }
+
+    .station label {
+      display: block;
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+      letter-spacing: 0.02em;
+    }
+
+    .station .hint {
+      display: block;
+      font-size: 0.58rem;
+      color: var(--text-muted);
+      opacity: 0.65;
+      margin-top: 0.2rem;
+      max-width: 8rem;
+    }
+
+    .station input,
+    .station select {
+      width: 100%;
+      min-width: 0;
+      padding: 0.4rem 0.5rem;
+      border: none;
+      border-radius: 3px;
+      background: var(--surface);
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.85rem;
+    }
+
+    .station input:focus,
+    .station select:focus {
+      outline: 1px solid var(--accent-dim);
+    }
+
+    /* Sheets */
+    .sheet-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(0, 0, 0, 0.75);
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .sheet-overlay.hidden {
+      display: none;
+    }
+
+    .sheet {
+      width: min(420px, 100%);
+      max-height: 100dvh;
+      overflow-y: auto;
+      background: var(--surface);
+      padding: 1.25rem 1.35rem 2rem;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sheet-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .sheet-header h2 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .sheet-field {
+      margin-bottom: 1rem;
+    }
+
+    .sheet-field label {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+    }
+
+    .sheet-field input,
+    .sheet-field select {
+      width: 100%;
+      padding: 0.5rem 0.6rem;
+      border: none;
+      border-radius: 3px;
+      background: var(--void);
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.88rem;
+    }
+
+    .sheet-field input:focus,
+    .sheet-field select:focus {
+      outline: 1px solid var(--accent-dim);
+    }
+
+    .field-with-action {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .field-with-action input {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 1rem 0;
+    }
+
+    .checkbox-row input {
+      width: auto;
+      accent-color: var(--accent);
+    }
+
+    .checkbox-row label {
+      margin: 0;
+      font-size: 0.85rem;
+      color: var(--text-primary);
+    }
+
+    .sheet-note {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin: 0 0 1rem;
+    }
+
+    .sheet-note strong {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .sheet-note code {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-primary);
+    }
+
+    .sheet-body h3 {
+      margin: 1.15rem 0 0.4rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .sheet-body h3:first-child {
+      margin-top: 0;
+    }
+
+    .sheet-body p,
+    .sheet-body li {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .sheet-body p {
+      margin: 0 0 0.65rem;
+    }
+
+    .sheet-body ul,
+    .sheet-body ol {
+      margin: 0 0 0.65rem;
+      padding-left: 1.2rem;
+    }
+
+    .sheet-body code {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      background: var(--void);
+      padding: 0.1rem 0.3rem;
+      border-radius: 2px;
+      color: var(--text-primary);
+    }
+
+    .security-note {
+      margin-top: 1rem;
+      padding: 0.65rem 0.75rem;
+      background: var(--void);
+      font-size: 0.75rem;
+      color: var(--accent);
+      line-height: 1.45;
+    }
+
+    .security-note strong {
+      color: var(--text-primary);
+    }
+
+    body.state-running .spectrum input,
+    body.state-running .spectrum select,
+    body.state-running .hero-url {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body class="state-idle">
+  <header class="peripheral-top">
+    <div class="brand-block">
+      <p class="brand-title">Channel Transcript Export</p>
+      <p class="brand-tagline">Export channel transcripts for LLM analysis · 1 export at a time</p>
+    </div>
+    <div class="peripheral-actions">
+      <button type="button" class="ghost-btn" id="advanced-open-btn" aria-haspopup="dialog">Advanced</button>
+    </div>
+  </header>
+
+  <main class="stage">
+    <form id="export-form" class="hero-url-wrap">
+      <input
+        id="channel-url"
+        class="hero-url"
+        type="text"
+        name="channel_url"
+        placeholder="https://www.youtube.com/@ChannelName"
+        required
+        autocomplete="off"
+        aria-label="YouTube channel URL"
+      />
+      <div id="recents-row" class="recents-row" aria-label="Recent channels"></div>
+      <p id="preset-hint" class="preset-hint hidden"></p>
+
+      <div id="pipeline-ui" class="pipeline-ui idle-collapsed">
+        <div class="pipeline-inner">
+          <div class="pipeline-row">
+            <p class="stage-line"><span id="stage-active" class="stage-active">—</span></p>
+            <p class="percent-line" id="percent-line" aria-live="polite">0%</p>
+          </div>
+          <div class="progress-track" aria-hidden="true">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+          <p class="status-line" id="status-line">Waiting…</p>
+          <p class="timing-line hidden" id="timing-line"></p>
+          <p class="backend-line hidden" id="backend-line"></p>
+          <p class="fallback-note hidden" id="fallback-note"></p>
+          <div class="corpus-stats hidden" id="stats">
+            <span class="stat"><span class="stat-label">Kept</span><strong id="stat-kept">—</strong></span>
+            <span class="stat"><span class="stat-label">Removed</span><strong id="stat-removed">—</strong></span>
+            <span class="stat"><span class="stat-label">Failed</span><strong id="stat-failed">—</strong></span>
+            <span class="stat"><span class="stat-label">Listed</span><strong id="stat-scraped">—</strong></span>
+            <span class="stat stat-corpus"><span class="stat-label">Corpus</span><strong id="stat-estimate">—</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="error-zone hidden" id="error-zone">
+        <p class="error-msg" id="error-line"></p>
+        <p class="error-hint hidden" id="error-cookie-hint">
+          Bot check or sign-in? <button type="button" id="error-open-advanced">Open Advanced → cookies</button>
+        </p>
+        <div class="hidden" id="error-report-wrap">
+          <textarea id="error-report" readonly aria-label="Error report"></textarea>
+          <div class="copy-row">
+            <button type="button" class="btn-secondary" id="copy-error-btn">Copy error report</button>
+            <span class="copy-hint" id="copy-hint"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="cta-wrap">
+        <button type="submit" class="btn-primary" id="start-btn">Build export</button>
+        <section class="result-actions hidden" id="result-panel">
+          <a id="download-link" href="#" download>
+            <button type="button" class="btn-download" id="download-btn">Download corpus (.txt)</button>
+          </a>
+          <button type="button" class="btn-secondary" id="preview-btn">Peek corpus</button>
+        </section>
+        <pre id="preview" class="hidden" aria-label="Export preview"></pre>
+      </div>
+
+      <div class="status-log-wrap hidden" id="status-log-wrap">
+        <div class="status-log-shell">
+          <div
+            class="status-log-viewport is-collapsed"
+            id="status-log-viewport"
+            aria-live="polite"
+          >
+            <div class="status-log" id="status-log"></div>
+          </div>
+          <button
+            type="button"
+            class="status-log-toggle hidden"
+            id="status-log-toggle"
+            aria-expanded="false"
+            aria-controls="status-log-viewport"
+          >
+            <span id="status-log-toggle-label">Show full log</span>
+            <span class="status-log-toggle-arrow" aria-hidden="true"></span>
+          </button>
+        </div>
+      </div>
+    </form>
+  </main>
+
+  <div class="spectrum-section">
+    <button
+      type="button"
+      id="spectrum-toggle"
+      class="spectrum-toggle"
+      aria-expanded="true"
+      aria-controls="spectrum-panel"
+      aria-label="Hide filter and export options"
+    >
+      <span class="spectrum-toggle-arrow" aria-hidden="true"></span>
+    </button>
+    <div id="spectrum-panel" class="spectrum-panel">
+      <div class="spectrum-panel-inner">
+        <nav class="spectrum-wrap" aria-label="Filter and export options">
+          <div class="spectrum" id="export-form-spectrum">
+      <div class="spectrum-row spectrum-row-export">
+        <span class="zone-label">Export</span>
+        <div class="spectrum-row-stations">
+          <div class="station">
+            <label for="sort-order">Sort</label>
+            <select id="sort-order">
+              <option value="asc" selected>Oldest first</option>
+              <option value="desc">Newest first</option>
+            </select>
+            <span class="hint">Video order in file</span>
+          </div>
+          <div class="station">
+            <label for="languages">Languages</label>
+            <input id="languages" type="text" value="en" />
+            <span class="hint">Comma-separated</span>
+          </div>
+        </div>
+      </div>
+      <div class="spectrum-row spectrum-row-filters">
+        <span class="zone-label">Filters</span>
+        <div class="spectrum-row-stations">
+          <div class="station">
+            <label for="percentile">Drop bottom %</label>
+            <input id="percentile" type="number" min="0" max="50" step="0.5" value="10" />
+            <span class="hint">By view count</span>
+          </div>
+          <div class="station">
+            <label for="min-age">Min age (days)</label>
+            <input id="min-age" type="number" min="0" max="365" step="1" value="14" />
+            <span class="hint">Skip newer uploads</span>
+          </div>
+          <div class="station">
+            <label for="min-views">View floor</label>
+            <input id="min-views" type="number" min="0" step="1" value="0" />
+            <span class="hint">0 = off</span>
+          </div>
+          <div class="station">
+            <label for="max-videos">Max videos</label>
+            <input id="max-videos" type="number" min="0" step="1" value="0" />
+            <span class="hint">0 = no limit</span>
+          </div>
+        </div>
+      </div>
+          </div>
+        </nav>
+      </div>
+    </div>
+  </div>
+
+  <footer class="peripheral-bottom">Jobs expire after 1 hour · Export runs in a background worker</footer>
+
+  <!-- Advanced sheet -->
+  <div class="sheet-overlay hidden" id="advanced-sheet" role="dialog" aria-modal="true" aria-labelledby="advanced-title">
+    <div class="sheet">
+      <div class="sheet-header">
+        <h2 id="advanced-title">Advanced</h2>
+        <button type="button" class="ghost-btn sheet-close" data-sheet="advanced-sheet">Close</button>
+      </div>
+      <p class="sheet-note">
+        Without cookies, exports use <strong>YouTube Data API</strong> when <code>YOUTUBE_API_KEY</code> is set in
+        <code>.env</code>. If scraping fails with a bot check, configure cookies below.
+        <strong>Fully quit the browser</strong> before auto-read.
+        For transcript IP blocks or 429 rate limits, set <code>WEBSHARE_PROXY_*</code> or
+        <code>HTTP_PROXY</code> in <code>.env.local</code> (server-side only), restart the server,
+        then use fetch workers <strong>1</strong> and delay <strong>≥ 1.0</strong> (2.0+ after 429 errors).
+      </p>
+      <div class="sheet-field">
+        <label for="cookies-browser">Cookies browser</label>
+        <select id="cookies-browser">
+          <option value="">None</option>
+          <option value="brave">Brave</option>
+          <option value="chrome">Chrome</option>
+          <option value="edge">Edge</option>
+          <option value="firefox">Firefox</option>
+          <option value="chromium">Chromium</option>
+          <option value="opera">Opera</option>
+          <option value="vivaldi">Vivaldi</option>
+          <option value="custom">Custom…</option>
+        </select>
+      </div>
+      <div id="cookies-browser-custom-wrap" class="sheet-field hidden">
+        <label for="cookies-browser-custom">Custom profile or path</label>
+        <input
+          id="cookies-browser-custom"
+          type="text"
+          placeholder="e.g. brave:Default"
+        />
+      </div>
+      <div class="sheet-field">
+        <label for="cookiefile">Cookie file path</label>
+        <div class="field-with-action">
+          <input id="cookiefile" type="text" placeholder="C:\path\to\cookies.txt" />
+          <button type="button" class="btn-secondary" id="cookie-guide-btn">Guide</button>
+        </div>
+      </div>
+      <div class="checkbox-row">
+        <input id="metadata-header" type="checkbox" checked />
+        <label for="metadata-header">Include metadata header in export</label>
+      </div>
+      <div class="checkbox-row">
+        <input id="verbose-export" type="checkbox" />
+        <label for="verbose-export">Verbose export (more tokens, human-readable separators)</label>
+      </div>
+      <div class="sheet-field">
+        <label for="fetch-workers">Fetch workers</label>
+        <input id="fetch-workers" type="number" min="1" max="8" step="1" value="2" />
+        <span class="hint">Concurrent transcript requests (default 2)</span>
+      </div>
+      <div class="sheet-field">
+        <label for="fetch-sleep">Delay between fetches (seconds)</label>
+        <input id="fetch-sleep" type="number" min="0" max="60" step="0.1" value="0.5" />
+        <span class="hint">Helps avoid IP blocks and 429 rate limits (use 1 worker with proxies)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cookie guide sheet -->
+  <div class="sheet-overlay hidden" id="cookie-guide-sheet" role="dialog" aria-modal="true" aria-labelledby="cookie-guide-title">
+    <div class="sheet">
+      <div class="sheet-header">
+        <h2 id="cookie-guide-title">Cookie export guide</h2>
+        <button type="button" class="ghost-btn sheet-close" data-sheet="cookie-guide-sheet">Close</button>
+      </div>
+      <div class="sheet-body">
+        <h3>When you need cookies</h3>
+        <p>
+          YouTube may block scraping with a bot check or sign-in prompt when it cannot verify a logged-in session.
+        </p>
+        <h3>Option A: Browser auto-read</h3>
+        <p>Select your browser in Advanced. Close the browser completely before starting an export.</p>
+        <ul>
+          <li><code>brave</code> — default Brave profile</li>
+          <li><code>brave:Default</code> — named profile</li>
+          <li>Full path syntax supported on Windows</li>
+        </ul>
+        <h3>Option B: Netscape cookie file</h3>
+        <p>Recommended for Brave on Windows. Export <code>youtube.com</code> cookies to a <code>.txt</code> file.</p>
+        <ol>
+          <li>Install <strong>Get cookies.txt LOCALLY</strong> in Brave.</li>
+          <li>Sign into YouTube, export cookies for <code>youtube.com</code>.</li>
+          <li>Paste the path into Cookie file path; set Cookies browser to None.</li>
+        </ol>
+        <h3>Troubleshooting</h3>
+        <ul>
+          <li><strong>Database locked</strong> — quit the browser fully and retry.</li>
+          <li><strong>Empty cookie file</strong> — re-export while signed in.</li>
+          <li><strong>Bot check persists</strong> — fresh export or different account.</li>
+        </ul>
+        <div class="security-note">
+          <strong>Security:</strong> Cookie files grant session access. Treat them like passwords.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_RECENTS = "channel_export_recent_channels";
+    const STORAGE_CURATION = "channel_export_last_curation";
+    const MAX_RECENTS = 5;
+
+    const form = document.getElementById("export-form");
+    const startBtn = document.getElementById("start-btn");
+    const pipelineUi = document.getElementById("pipeline-ui");
+    const resultPanel = document.getElementById("result-panel");
+    const progressFill = document.getElementById("progress-fill");
+    const stageActive = document.getElementById("stage-active");
+    const percentLine = document.getElementById("percent-line");
+    const statusLine = document.getElementById("status-line");
+    const timingLine = document.getElementById("timing-line");
+    const backendLine = document.getElementById("backend-line");
+    const fallbackNote = document.getElementById("fallback-note");
+    const statusLogWrap = document.getElementById("status-log-wrap");
+    const statusLogViewport = document.getElementById("status-log-viewport");
+    const statusLogEl = document.getElementById("status-log");
+    const statusLogToggle = document.getElementById("status-log-toggle");
+    const statusLogToggleLabel = document.getElementById("status-log-toggle-label");
+    const errorZone = document.getElementById("error-zone");
+    const errorLine = document.getElementById("error-line");
+    const errorCookieHint = document.getElementById("error-cookie-hint");
+    const errorReportWrap = document.getElementById("error-report-wrap");
+    const errorReportEl = document.getElementById("error-report");
+    const copyErrorBtn = document.getElementById("copy-error-btn");
+    const copyHint = document.getElementById("copy-hint");
+    const statsEl = document.getElementById("stats");
+    const statKept = document.getElementById("stat-kept");
+    const statScraped = document.getElementById("stat-scraped");
+    const statEstimate = document.getElementById("stat-estimate");
+    const statRemoved = document.getElementById("stat-removed");
+    const statFailed = document.getElementById("stat-failed");
+    const previewBtn = document.getElementById("preview-btn");
+    const previewEl = document.getElementById("preview");
+    const downloadLink = document.getElementById("download-link");
+    const recentsRow = document.getElementById("recents-row");
+    const presetHint = document.getElementById("preset-hint");
+    const cookiesBrowserSelect = document.getElementById("cookies-browser");
+    const cookiesBrowserCustomWrap = document.getElementById("cookies-browser-custom-wrap");
+    const cookiesBrowserCustomInput = document.getElementById("cookies-browser-custom");
+    const cookieGuideBtn = document.getElementById("cookie-guide-btn");
+    const advancedSheet = document.getElementById("advanced-sheet");
+    const cookieGuideSheet = document.getElementById("cookie-guide-sheet");
+    const advancedOpenBtn = document.getElementById("advanced-open-btn");
+    const errorOpenAdvanced = document.getElementById("error-open-advanced");
+
+    let pollTimer = null;
+    let currentJobId = null;
+    let lastFocusedBeforeSheet = null;
+    let statusLogExpanded = false;
+
+    function isStatusLogNearBottom() {
+      const threshold = 24;
+      return (
+        statusLogViewport.scrollHeight -
+          statusLogViewport.scrollTop -
+          statusLogViewport.clientHeight <=
+        threshold
+      );
+    }
+
+    function scrollStatusLogToBottom() {
+      statusLogViewport.scrollTop = statusLogViewport.scrollHeight;
+    }
+
+    const HERO_STAGE_LABELS = {
+      starting: "Preparing export",
+      queued: "Preparing export",
+      scraping: "Listing channel videos",
+      filtering: "Curating outliers",
+      fetching: "Fetching transcripts",
+      exporting: "Writing LLM export",
+      done: "Export ready",
+      error: "Export failed",
+    };
+
+    function heroStageLabel(stage) {
+      return HERO_STAGE_LABELS[stage] || stage.replace(/_/g, " ");
+    }
+
+    function setBodyState(state) {
+      document.body.className = `state-${state}`;
+    }
+
+    function parseLanguages(value) {
+      return value.split(",").map((s) => s.trim()).filter(Boolean);
+    }
+
+    function getCookiesFromBrowser() {
+      const selected = cookiesBrowserSelect.value;
+      if (!selected) return null;
+      if (selected === "custom") {
+        const custom = cookiesBrowserCustomInput.value.trim();
+        return custom || null;
+      }
+      return selected;
+    }
+
+    function channelDisplayLabel(url) {
+      const trimmed = url.trim();
+      const handleMatch = trimmed.match(/@([\w.-]+)/);
+      if (handleMatch) return `@${handleMatch[1]}`;
+      try {
+        const parsed = new URL(trimmed.includes("://") ? trimmed : `https://youtube.com/${trimmed}`);
+        const path = parsed.pathname.replace(/\/$/, "");
+        if (path.startsWith("/@")) return path.slice(0, 32);
+      } catch {
+        /* ignore */
+      }
+      return trimmed.length > 36 ? `${trimmed.slice(0, 33)}…` : trimmed;
+    }
+
+    function loadRecentChannels() {
+      try {
+        const raw = localStorage.getItem(STORAGE_RECENTS);
+        return raw ? JSON.parse(raw) : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveRecentChannels(urls) {
+      try {
+        localStorage.setItem(STORAGE_RECENTS, JSON.stringify(urls.slice(0, MAX_RECENTS)));
+      } catch {
+        /* ignore */
+      }
+    }
+
+    function pushRecentChannel(url) {
+      const trimmed = url.trim();
+      if (!trimmed) return;
+      const list = loadRecentChannels().filter((u) => u !== trimmed);
+      list.unshift(trimmed);
+      saveRecentChannels(list);
+      renderRecentChannels();
+    }
+
+    function renderRecentChannels() {
+      recentsRow.replaceChildren();
+      const recents = loadRecentChannels();
+      if (!recents.length) {
+        recentsRow.classList.add("hidden");
+        return;
+      }
+      recentsRow.classList.remove("hidden");
+      for (const url of recents) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "recent-pill";
+        btn.textContent = channelDisplayLabel(url);
+        btn.title = url;
+        btn.addEventListener("click", () => {
+          document.getElementById("channel-url").value = url;
+        });
+        recentsRow.appendChild(btn);
+      }
+    }
+
+    function getCurationFromForm() {
+      return {
+        percentile: Number(document.getElementById("percentile").value),
+        minAge: Number(document.getElementById("min-age").value),
+        minViews: Number(document.getElementById("min-views").value),
+        maxVideos: Number(document.getElementById("max-videos").value),
+        sort: document.getElementById("sort-order").value,
+        languages: document.getElementById("languages").value,
+        metadata: document.getElementById("metadata-header").checked,
+        verbose: document.getElementById("verbose-export").checked,
+        fetchWorkers: Number(document.getElementById("fetch-workers").value),
+        fetchSleep: Number(document.getElementById("fetch-sleep").value),
+      };
+    }
+
+    function applyCuration(c) {
+      if (!c) return;
+      document.getElementById("percentile").value = c.percentile ?? 10;
+      document.getElementById("min-age").value = c.minAge ?? 14;
+      document.getElementById("min-views").value = c.minViews ?? 0;
+      document.getElementById("max-videos").value = c.maxVideos ?? 0;
+      document.getElementById("sort-order").value = c.sort === "desc" ? "desc" : "asc";
+      document.getElementById("languages").value = c.languages ?? "en";
+      document.getElementById("metadata-header").checked = c.metadata !== false;
+      document.getElementById("verbose-export").checked = c.verbose === true;
+      document.getElementById("fetch-workers").value = c.fetchWorkers ?? 2;
+      document.getElementById("fetch-sleep").value = c.fetchSleep ?? 0.5;
+    }
+
+    function saveLastCuration() {
+      try {
+        localStorage.setItem(STORAGE_CURATION, JSON.stringify(getCurationFromForm()));
+      } catch {
+        /* ignore */
+      }
+      updatePresetHint();
+    }
+
+    function loadLastCuration() {
+      try {
+        const raw = localStorage.getItem(STORAGE_CURATION);
+        if (raw) applyCuration(JSON.parse(raw));
+      } catch {
+        /* ignore */
+      }
+      updatePresetHint();
+    }
+
+    function updatePresetHint() {
+      const c = getCurationFromForm();
+      const sortLabel = c.sort === "desc" ? "newest" : "oldest";
+      presetHint.textContent = `Filters · ${c.percentile}% cutoff · ${c.minAge}d min age · ${sortLabel} first`;
+      presetHint.classList.remove("hidden");
+    }
+
+    function openSheet(sheetEl) {
+      lastFocusedBeforeSheet = document.activeElement;
+      sheetEl.classList.remove("hidden");
+      const closeBtn = sheetEl.querySelector(".sheet-close");
+      if (closeBtn) closeBtn.focus();
+    }
+
+    function closeSheet(sheetEl) {
+      sheetEl.classList.add("hidden");
+      if (lastFocusedBeforeSheet && typeof lastFocusedBeforeSheet.focus === "function") {
+        lastFocusedBeforeSheet.focus();
+      }
+    }
+
+    function updateCookiesBrowserCustomVisibility() {
+      cookiesBrowserCustomWrap.classList.toggle("hidden", cookiesBrowserSelect.value !== "custom");
+    }
+
+    cookiesBrowserSelect.addEventListener("change", updateCookiesBrowserCustomVisibility);
+    advancedOpenBtn.addEventListener("click", () => openSheet(advancedSheet));
+    cookieGuideBtn.addEventListener("click", () => openSheet(cookieGuideSheet));
+    errorOpenAdvanced.addEventListener("click", () => openSheet(advancedSheet));
+
+    document.querySelectorAll(".sheet-close").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-sheet");
+        const sheet = document.getElementById(id);
+        if (sheet) closeSheet(sheet);
+      });
+    });
+
+    [advancedSheet, cookieGuideSheet].forEach((overlay) => {
+      overlay.addEventListener("click", (event) => {
+        if (event.target === overlay) closeSheet(overlay);
+      });
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      if (!advancedSheet.classList.contains("hidden")) closeSheet(advancedSheet);
+      else if (!cookieGuideSheet.classList.contains("hidden")) closeSheet(cookieGuideSheet);
+    });
+
+    ["percentile", "min-age", "min-views", "max-videos", "sort-order", "languages"].forEach((id) => {
+      const el = document.getElementById(id);
+      el.addEventListener("change", () => {
+        saveLastCuration();
+      });
+    });
+
+    function validateChannelUrl(url) {
+      const trimmed = (url || "").trim();
+      if (!trimmed) return "Channel URL is required.";
+      if (/^@[\w.-]+$/.test(trimmed)) return null;
+      let parsed;
+      try {
+        const withScheme = trimmed.includes("://")
+          ? trimmed
+          : `https://www.youtube.com/${trimmed.replace(/^\//, "")}`;
+        parsed = new URL(withScheme);
+      } catch {
+        return "Enter a valid YouTube channel URL.";
+      }
+      const path = parsed.pathname.replace(/\/$/, "");
+      if (path === "/@" || (path.startsWith("/@") && !/^\/@[\w.-]+/.test(path))) {
+        return "Channel URL is missing a handle after @.";
+      }
+      if (/^\/@[\w.-]+/.test(path)) return null;
+      if (path.startsWith("/channel/")) {
+        const channelId = path.slice("/channel/".length).split("/")[0];
+        if (channelId.startsWith("UC") && channelId.length > 2) return null;
+        return "Use @handle, /channel/UC..., or list=UU... playlist.";
+      }
+      const listId = parsed.searchParams.get("list");
+      if (listId && listId.startsWith("UU")) return null;
+      return "Use @handle, /channel/UC..., or an uploads playlist URL.";
+    }
+
+    function buildPayload() {
+      return {
+        channel_url: document.getElementById("channel-url").value.trim(),
+        filter_config: {
+          min_age_days: Number(document.getElementById("min-age").value),
+          percentile_cutoff: Number(document.getElementById("percentile").value),
+          min_views_floor: Number(document.getElementById("min-views").value),
+          max_videos: Number(document.getElementById("max-videos").value),
+        },
+        export_config: {
+          sort_order: document.getElementById("sort-order").value,
+          languages: parseLanguages(document.getElementById("languages").value),
+          include_metadata_header: document.getElementById("metadata-header").checked,
+          export_density: document.getElementById("verbose-export").checked
+            ? "verbose"
+            : "compact",
+        },
+        scrape_config: {
+          cookies_from_browser: getCookiesFromBrowser(),
+          cookiefile: document.getElementById("cookiefile").value.trim() || null,
+          enrich_max_workers: 2,
+        },
+        fetch_config: {
+          max_workers: Number(document.getElementById("fetch-workers").value),
+          sleep_seconds: Number(document.getElementById("fetch-sleep").value),
+        },
+      };
+    }
+
+    function setRunning(running) {
+      startBtn.disabled = running;
+      const spectrum = document.getElementById("export-form-spectrum");
+      spectrum.querySelectorAll("input, select").forEach((el) => {
+        el.disabled = running;
+      });
+      document.getElementById("channel-url").disabled = running;
+      if (running) {
+        startBtn.textContent = "Building…";
+        setBodyState("running");
+      } else {
+        startBtn.textContent = "Build export";
+      }
+    }
+
+    function resolvePercent(data) {
+      if (typeof data.percent === "number" && data.percent > 0) {
+        return Math.min(100, data.percent);
+      }
+      if (data.total === 100) return Math.min(100, data.progress || 0);
+      if (!data.total || data.total <= 0) return 0;
+      return Math.min(100, Math.round((data.progress / data.total) * 100));
+    }
+
+    function formatDuration(seconds) {
+      const total = Math.max(0, Math.floor(seconds || 0));
+      const hours = Math.floor(total / 3600);
+      const minutes = Math.floor((total % 3600) / 60);
+      const secs = total % 60;
+      if (hours) return `${hours}h ${minutes}m ${secs}s`;
+      if (minutes) return `${minutes}m ${secs}s`;
+      return `${secs}s`;
+    }
+
+    function updateStatusLogExpandable(hasMultipleLines) {
+      statusLogViewport.classList.toggle("is-expandable", hasMultipleLines && !statusLogExpanded);
+    }
+
+    function setStatusLogExpanded(expanded) {
+      statusLogExpanded = expanded;
+      statusLogViewport.classList.toggle("is-collapsed", !expanded);
+      statusLogViewport.classList.toggle("is-expanded", expanded);
+      statusLogToggle.setAttribute("aria-expanded", String(expanded));
+      statusLogToggleLabel.textContent = expanded ? "Hide log" : "Show full log";
+      updateStatusLogExpandable(statusLogEl.childElementCount > 1);
+    }
+
+    function renderStatusLog(lines) {
+      const visibleLines = (lines || []).slice(-25);
+      const stickToBottom = !statusLogExpanded || isStatusLogNearBottom();
+      statusLogEl.replaceChildren();
+      for (const line of visibleLines) {
+        const row = document.createElement("div");
+        row.textContent = line;
+        statusLogEl.appendChild(row);
+      }
+
+      if (!visibleLines.length) {
+        statusLogWrap.classList.add("hidden");
+        statusLogToggle.classList.add("hidden");
+        statusLogViewport.classList.remove("is-expandable");
+        return;
+      }
+
+      statusLogWrap.classList.remove("hidden");
+      const hasMultipleLines = visibleLines.length > 1;
+      statusLogToggle.classList.toggle("hidden", !hasMultipleLines);
+      if (!hasMultipleLines) {
+        setStatusLogExpanded(false);
+      } else if (!statusLogExpanded) {
+        setStatusLogExpanded(false);
+      }
+      updateStatusLogExpandable(hasMultipleLines);
+      if (statusLogExpanded && stickToBottom) {
+        scrollStatusLogToBottom();
+      }
+    }
+
+    function toggleStatusLogExpanded() {
+      setStatusLogExpanded(!statusLogExpanded);
+      updateStatusLogExpandable(statusLogEl.childElementCount > 1);
+      if (statusLogExpanded) {
+        scrollStatusLogToBottom();
+      }
+    }
+
+    statusLogToggle.addEventListener("click", toggleStatusLogExpanded);
+
+    statusLogViewport.addEventListener("click", () => {
+      if (
+        statusLogExpanded ||
+        statusLogToggle.classList.contains("hidden")
+      ) {
+        return;
+      }
+      toggleStatusLogExpanded();
+    });
+
+    function isCookieRelatedError(message) {
+      const lower = (message || "").toLowerCase();
+      return (
+        lower.includes("bot") ||
+        lower.includes("cookie") ||
+        lower.includes("sign-in") ||
+        lower.includes("sign in") ||
+        lower.includes("login")
+      );
+    }
+
+    function showPipeline() {
+      pipelineUi.classList.remove("idle-collapsed");
+    }
+
+    function updateProgressUi(data) {
+      const pct = resolvePercent(data);
+      const running = data.status === "running" || data.status === "pending";
+      const indeterminate = running && pct === 0 && data.stage === "scraping";
+
+      stageActive.textContent = heroStageLabel(data.stage);
+      percentLine.textContent = indeterminate ? "…" : `${pct}%`;
+      progressFill.classList.toggle("indeterminate", indeterminate);
+      if (!indeterminate) progressFill.style.width = `${pct}%`;
+      statusLine.textContent = data.message || heroStageLabel(data.stage);
+
+      if (running && data.elapsed_seconds != null) {
+        timingLine.classList.remove("hidden");
+        const etaText = data.eta_label || "Estimating…";
+        timingLine.textContent = `Elapsed ${formatDuration(data.elapsed_seconds)} · ${etaText}`;
+      } else if (data.status === "completed" && data.elapsed_seconds != null) {
+        timingLine.classList.remove("hidden");
+        timingLine.textContent = `Finished in ${formatDuration(data.elapsed_seconds)}`;
+      } else {
+        timingLine.classList.add("hidden");
+      }
+
+      if (data.scrape_backend_label) {
+        backendLine.classList.remove("hidden");
+        const reason = data.scrape_backend_reason ? ` — ${data.scrape_backend_reason}` : "";
+        backendLine.innerHTML = `Source: <strong>${data.scrape_backend_label}</strong>${reason}`;
+      } else {
+        backendLine.classList.add("hidden");
+      }
+
+      if (data.scrape_fallback_error) {
+        fallbackNote.classList.remove("hidden");
+        fallbackNote.textContent = `yt-dlp failed before API fallback: ${data.scrape_fallback_error}`;
+      } else {
+        fallbackNote.classList.add("hidden");
+      }
+
+      if (data.status_log && data.status_log.length) {
+        renderStatusLog(data.status_log);
+      }
+    }
+
+    function stopPolling() {
+      if (pollTimer) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+      }
+    }
+
+    function clearErrorUi() {
+      errorZone.classList.add("hidden");
+      errorLine.textContent = "";
+      errorCookieHint.classList.add("hidden");
+      errorReportWrap.classList.add("hidden");
+      errorReportEl.value = "";
+      copyHint.textContent = "";
+    }
+
+    function showError(message, report) {
+      errorZone.classList.remove("hidden");
+      errorLine.textContent = message || "Unknown error";
+      errorCookieHint.classList.toggle("hidden", !isCookieRelatedError(message));
+      if (report) {
+        errorReportEl.value = report;
+        errorReportWrap.classList.remove("hidden");
+      } else {
+        errorReportWrap.classList.add("hidden");
+      }
+      setBodyState("failed");
+    }
+
+    copyErrorBtn.addEventListener("click", async () => {
+      const text = errorReportEl.value;
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        copyHint.textContent = "Copied!";
+      } catch {
+        errorReportEl.focus();
+        errorReportEl.select();
+        copyHint.textContent = "Select all and copy (Ctrl+C)";
+      }
+    });
+
+    async function pollJob(jobId) {
+      const res = await fetch(`/api/jobs/${jobId}`);
+      if (!res.ok) throw new Error(`Status poll failed (${res.status})`);
+      const data = await res.json();
+      updateProgressUi(data);
+
+      if (data.kept_count != null) {
+        statsEl.classList.remove("hidden");
+        statKept.textContent = data.kept_count;
+        statRemoved.textContent = data.removed_count ?? 0;
+        statFailed.textContent = data.failed_count ?? 0;
+      }
+      if (data.scraped_video_count != null) {
+        statsEl.classList.remove("hidden");
+        statScraped.textContent = data.scraped_video_count;
+      }
+      if (data.estimated_export_bytes != null && data.estimated_export_bytes > 0) {
+        statsEl.classList.remove("hidden");
+        const megabytes = data.estimated_export_bytes / (1024 * 1024);
+        statEstimate.textContent =
+          megabytes >= 1 ? `~${megabytes.toFixed(1)} MB` : `~${Math.round(data.estimated_export_bytes / 1024)} KB`;
+      }
+
+      if (data.status === "failed") {
+        stopPolling();
+        setRunning(false);
+        showError(data.error || "Unknown error", data.error_report || null);
+        return;
+      }
+
+      if (data.status === "completed") {
+        stopPolling();
+        setRunning(false);
+        setBodyState("complete");
+        progressFill.classList.remove("indeterminate");
+        progressFill.style.width = "100%";
+        percentLine.textContent = "100%";
+        stageActive.textContent = heroStageLabel("done");
+        statusLine.textContent = "Export ready";
+        startBtn.classList.add("hidden");
+        resultPanel.classList.remove("hidden");
+        downloadLink.href = `/api/jobs/${jobId}/download`;
+        previewBtn.disabled = false;
+        saveLastCuration();
+        pushRecentChannel(document.getElementById("channel-url").value.trim());
+      }
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const channelUrlError = validateChannelUrl(document.getElementById("channel-url").value);
+      if (channelUrlError) {
+        showError(channelUrlError, null);
+        return;
+      }
+
+      stopPolling();
+      clearErrorUi();
+      previewEl.classList.add("hidden");
+      previewEl.textContent = "";
+      resultPanel.classList.add("hidden");
+      startBtn.classList.remove("hidden");
+      statsEl.classList.add("hidden");
+      timingLine.classList.add("hidden");
+      backendLine.classList.add("hidden");
+      fallbackNote.classList.add("hidden");
+      statusLogWrap.classList.add("hidden");
+      statusLogEl.replaceChildren();
+      statusLogToggle.classList.add("hidden");
+      statusLogExpanded = false;
+      setStatusLogExpanded(false);
+      statusLogViewport.classList.remove("is-expandable");
+
+      showPipeline();
+      progressFill.classList.remove("indeterminate");
+      progressFill.style.width = "0%";
+      percentLine.textContent = "0%";
+      stageActive.textContent = heroStageLabel("starting");
+      statusLine.textContent = "Creating job…";
+      setRunning(true);
+      previewBtn.disabled = true;
+      saveLastCuration();
+
+      try {
+        const res = await fetch("/api/jobs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(buildPayload()),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          const detail = err.detail || `Failed to start job (${res.status})`;
+          throw new Error(detail);
+        }
+        const { job_id } = await res.json();
+        currentJobId = job_id;
+        pollTimer = setInterval(() => {
+          pollJob(job_id).catch((err) => {
+            stopPolling();
+            setRunning(false);
+            showError(err.message, null);
+          });
+        }, 1000);
+        await pollJob(job_id);
+      } catch (err) {
+        setRunning(false);
+        showPipeline();
+        showError(err.message, null);
+      }
+    });
+
+    previewBtn.addEventListener("click", async () => {
+      if (!currentJobId) return;
+      previewBtn.disabled = true;
+      try {
+        const res = await fetch(`/api/jobs/${currentJobId}/preview`);
+        if (!res.ok) throw new Error(`Preview failed (${res.status})`);
+        previewEl.textContent = await res.text();
+        previewEl.classList.remove("hidden");
+      } catch (err) {
+        showError(err.message, null);
+      } finally {
+        previewBtn.disabled = false;
+      }
+    });
+
+    const spectrumToggle = document.getElementById("spectrum-toggle");
+    const spectrumPanel = document.getElementById("spectrum-panel");
+
+    spectrumToggle.addEventListener("click", () => {
+      const collapsed = spectrumPanel.classList.toggle("is-collapsed");
+      const expanded = !collapsed;
+      spectrumToggle.setAttribute("aria-expanded", String(expanded));
+      spectrumToggle.setAttribute(
+        "aria-label",
+        expanded ? "Hide filter and export options" : "Show filter and export options"
+      );
+    });
+
+    updateCookiesBrowserCustomVisibility();
+    loadLastCuration();
+    renderRecentChannels();
+    setBodyState("idle");
+  </script>
+</body>
+</html>

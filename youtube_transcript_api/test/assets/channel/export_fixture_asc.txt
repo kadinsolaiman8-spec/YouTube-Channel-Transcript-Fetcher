@@ -1,0 +1,16 @@
+# Example Channel | export:2026-05-19T12:00:00+00:00 | transcripts:2/3 | scraped:4 filtered_out:1 | sort:oldest | filter:Removed 1/3 videos below 10th percentile (threshold: 500 views) after 14-day age gate
+
+## 1/2 Older Video | 2024-01-10 | vid_older | views:12500
+https://youtu.be/vid_older
+
+Hello world.
+
+Next line.
+
+## 2/2 Newer Video | 2024-06-15 | vid_newer | views:98000
+https://youtu.be/vid_newer
+
+Only once.
+
+# FAILED (1 videos)
+vid_failed | No Captions | No transcript found

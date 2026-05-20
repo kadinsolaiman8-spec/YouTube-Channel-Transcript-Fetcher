@@ -54,3 +54,11 @@ __all__ = [
     "YouTubeDataUnparsable",
     "PoTokenRequired",
 ]
+
+try:
+    from youtube_transcript_api.channel.models import FilterConfig
+    from youtube_transcript_api.channel.pipeline import run_pipeline
+
+    __all__ += ["FilterConfig", "run_pipeline"]
+except ImportError:
+    pass
